@@ -1,0 +1,17 @@
+{
+  "name": "flux-framework",
+  "version": "1.0.0",
+  "main": "Flux.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sherloque HB Wells",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
