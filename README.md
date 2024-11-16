@@ -10,13 +10,13 @@ initialization creates an express server/ server_
 reccomended to take advantage of its organised frame,
 
  [Example Init]
- '''Javascript
+ ```Javascript
  const express = require("express")
  const {checkDependencies, ...streams to be used} = require("./Flux.js");
  checkDependencies()
 
  const serverLog = new ServerLog($portForServer);
- const server = serverLog.server_;'''
+ const server = serverLog.server_;`
  //All funcs ideally given to servers are now handled by the serverLog instance [---stream]
 
 # Routing System
