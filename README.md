@@ -16,7 +16,8 @@ reccomended to take advantage of its organised frame,
  checkDependencies()
 
  const serverLog = new ServerLog($portForServer);
- const server = serverLog.server_;`
+ const server = serverLog.server_;
+```
  //All funcs ideally given to servers are now handled by the serverLog instance [---stream]
 
 # Routing System
