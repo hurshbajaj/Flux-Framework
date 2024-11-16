@@ -27,7 +27,6 @@ basic approaches,
     will take in all #method reqs, like get/post, etc...
     once inside, you can handle the individual reqs using routeFlux(#url, handler),
     incase you want to handle redirects, use ackFlux(#urlArr, handler)
-
     ackFlux will automatically redirect all url reqs in urlArr to urlArr[0] or the first url in it, it will then
     proceed to run the handler
 
