@@ -21,8 +21,6 @@ reccomended to take advantage of its organised frame,
 
 # Routing System
 
-basic approaches, 
-
 1, You can use ackAll(#method, handler ~ req/res),
     will take in all #method reqs, like get/post, etc...
     once inside, you can handle the individual reqs using routeFlux(#url, handler),

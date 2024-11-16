@@ -1,6 +1,9 @@
 function checkDependencies(){
     if (!require.cache[require.resolve('express')]) {
-        throw new Error('Flux fluctuated! "Express" required.');
+        console.warn('Flux fluctuated! "Express" required.');
+    }
+    if (!require.cache[require.resolve('fs')]) {
+        console.warn('Flux fluctuated! "File System" required.');
     }
 }
 
@@ -46,10 +49,31 @@ class Flux {
             }
         }
         catch(err){
-            throw new Error("Flux Fluctuated! ", err);
+            throw new Error("Flux Fluctuated! " + err.message);
         }
         
         
+    }
+
+    inFile(path, term) {
+        return new Promise((resolve, reject) => {
+            let words = '';
+            let stream = fs.createReadStream(path, { encoding: 'utf8' });
+
+            stream.on('data', chunk => {
+                console.log(chunk);
+                words += chunk;
+            });
+            stream.on('end', () => {
+                words = words.split(" ");
+                let returnVal = words.includes(term);
+                resolve(returnVal);
+            });
+            stream.on('error', (err) => {
+                reject(`Flux fluctuated! ${err.message}`);
+            });
+
+        });
     }
 
 }
@@ -93,14 +117,19 @@ class ServerLog extends Flux{
     //server *rel
 
     ack(method=this.baseReq.method, urlArr=[], handler=()=>{}){
+        this.preRedirect = null;
         try{
             urlArr.forEach(url_ => {
                 this.server_[method](url_, async (req, res)=>{
                     this.baseReq = req;
+                    this.baseRes = res;
+
+                    
                     if(url_ == urlArr[0]){
                         await handler(req,res);
                     }
                     else{
+                        
                         res.redirect(urlArr[0])
                     }
                     
@@ -108,7 +137,7 @@ class ServerLog extends Flux{
             });
         }
         catch(err){
-            throw new Error("Flux Fluctuated! ", err)
+            throw new Error("Flux Fluctuated! " + err.message);
         } 
     }
     ackAll(method, handler = () => {}) {
@@ -137,10 +166,11 @@ class ServerLog extends Flux{
                 handler()
             }
         }catch(err){
-            throw new Error("Flux Fluctuated! ", err)
+            throw new Error("Flux Fluctuated! " + err.message);
         }
         
     }
+
     ackFlux(urls ,handler){
         try{
             if(urls.includes(this.baseReq.url)){
@@ -153,14 +183,17 @@ class ServerLog extends Flux{
                 }
             }
             
-        }catch(err){
-            throw new Error("Flux Fluctuated! ", err)
+        }
+        catch(err){
+            throw new Error("Flux Fluctuated! " + err.message);
         }
         
     }
 
     run(handler){
         this.server_.use((req, res, next)=>{
+            this.baseReq = req;
+            this.baseRes = res;
             handler(req, res)
             next()
         })
@@ -170,6 +203,8 @@ class ServerLog extends Flux{
 
     default(handler){
         this.server_.use((req, res, next)=>{
+            this.baseReq = req;
+            this.baseRes = res;
             handler(req, res, next)
             
         })
@@ -190,6 +225,7 @@ class ServerLog extends Flux{
                 })
                 
 
+
                 
             }
             else if(reqNature < 0){
@@ -203,7 +239,7 @@ class ServerLog extends Flux{
                 throw new Error("---reqLog must be initialized first")
             }
             else{
-                throw new Error("Flux Fluctuated! ", err)
+                throw new Error("Flux Fluctuated! " + err.message);
             }
             
         }
@@ -230,13 +266,13 @@ class ServerLog extends Flux{
     initReqLog() {
         this.reqLog = [];
         this.server_.use((req, res, next) => {
-            // Record the initial request data and increment index
+            
             this.updateReqLog(req, 1);
     
-            // Capture `reqI` for this specific request
+            
             const currentReqIndex = this.reqI;
     
-            // Calculate response time once the response finishes
+            
             res.on('finish', () => {
                 const responseTime = Date.now() - this.reqLog[currentReqIndex].timestamp; // Calculate resTime
                 this.reqLog[currentReqIndex].resTime = responseTime; // Directly add resTime to the reqLog entry
@@ -247,28 +283,12 @@ class ServerLog extends Flux{
     
     
 
-    //fs/serverside calc *rel
+    //fs *rel
 
-    inFile(path, term) {
-        return new Promise((resolve, reject) => {
-            let words = '';
-            let stream = fs.createReadStream(path, { encoding: 'utf8' });
-
-            stream.on('data', chunk => {
-                console.log(chunk);
-                words += chunk;
-            });
-            stream.on('end', () => {
-                words = words.split(" ");
-                let returnVal = words.includes(term);
-                resolve(returnVal);
-            });
-            stream.on('error', (err) => {
-                reject(`Flux fluctuated! ${err}`);
-            });
-
-        });
+    pushFile(fileLoc){
+        this.baseRes.sendFile(fileLoc, {root: __dirname})
     }
+
 }
 
 module.exports = {
@@ -289,10 +309,7 @@ function Test(){
     serverLog.initReqLog()
         // Define a route using ack method
     serverLog.ack("get",["/", "/home"],(req, res)=>{
-        
-        res.send("inside ack!")
-        
-        
+        res.send("ack")
     })
     serverLog.ackAll("get", (req, res)=>{
         serverLog.routeFlux("/routeFlux", ()=>{
