@@ -3,7 +3,7 @@
 main parent class Flux* (main stream) includes several base funcs, like random enhanced, arrPad, etc.
 [creating instance of main stream not required...]
 
-~|||RECCOMENDED TO DESTRUCTURE THE VARIOUS STREAMS WHILE IMPORTING FOR CLARITY|||~
+~ |||RECCOMENDED TO DESTRUCTURE THE VARIOUS STREAMS WHILE IMPORTING FOR CLARITY||| ~
 
 for more of a directed use, create instance of one of its "streams", or sub-classes, for eg/ ServerLog{...}
 initialization creates an express server/ server_
