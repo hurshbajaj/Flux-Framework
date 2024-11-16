@@ -81,6 +81,7 @@ class ServerLog extends Flux{
         }
 
         this.baseReq = null;
+        this.baseRes = null;
     }
 
     listen(PORT = null, callback=()=>{}){
@@ -91,7 +92,7 @@ class ServerLog extends Flux{
     }
     //server *rel
 
-    ack(method="all", urlArr=[], handler=()=>{}){
+    ack(method=this.baseReq.method, urlArr=[], handler=()=>{}){
         try{
             urlArr.forEach(url_ => {
                 this.server_[method](url_, async (req, res)=>{
@@ -110,23 +111,25 @@ class ServerLog extends Flux{
             throw new Error("Flux Fluctuated! ", err)
         } 
     }
-    ackFlux( urlArr=[], handler=()=>{}){
-        try{
-            urlArr.forEach(url_ => {
-                if(this.baseReq.url = url_){
-                    if(url_ != urlArr[0]){
-                        res.redirect(urlArr[0])
-                    }
-                    else{
-                        handler()
-                    }
+    ackAll(method, handler = () => {}) {
+        try {
+            this.server_.use(async (req, res, next) => {
+                if (req.method.toUpperCase() === method.toUpperCase()) {
+                    this.baseReq = req;
+                    this.baseRes = res;
+                    
+                    await handler(req, res);
                 }
-            })
+                if (!res.headersSent) {
+                    next();
+                }
+            });
+        } catch (err) {
+            throw new Error("Flux Fluctuated! " + err.message);
         }
-        catch(err){
-            throw new Error("Flux Fluctuated! ", err)
-        } 
     }
+    
+    
 
     routeFlux(url ,handler){
         try{
@@ -138,23 +141,28 @@ class ServerLog extends Flux{
         }
         
     }
+    ackFlux(urls ,handler){
+        try{
+            if(urls.includes(this.baseReq.url)){
+                
+                if(urls.indexOf(this.baseReq.url) == 0){
+                    handler()
+                }
+                else{
+                    this.baseRes.redirect(urls[0])
+                }
+            }
+            
+        }catch(err){
+            throw new Error("Flux Fluctuated! ", err)
+        }
+        
+    }
 
     run(handler){
         this.server_.use((req, res, next)=>{
             handler(req, res)
             next()
-        })
-    } //app.use enhanced
-    runForMethod(method, handler){
-        this.server_.use((req, res, next)=>{
-            this.baseReq = req;
-            if(req.method == method.toUpperCase()){
-                handler(req, res)
-            }
-            if(!res.headersSent){
-                next()
-            }
-            
         })
     } //app.use enhanced
 
@@ -280,10 +288,21 @@ function Test(){
 
     serverLog.initReqLog()
         // Define a route using ack method
-    serverLog.runForMethod("get", (req, res)=>{
+    serverLog.ack("get",["/", "/home"],(req, res)=>{
         
-        serverLog.ackFlux(["/", "/home", "/old-home"], ()=>{
-            res.send("home!")
+        res.send("inside ack!")
+        
+        
+    })
+    serverLog.ackAll("get", (req, res)=>{
+        serverLog.routeFlux("/routeFlux", ()=>{
+            res.send("routeFlux!")
+        })
+        serverLog.routeFlux("/routeFlux2", ()=>{
+            res.send("routeFlux!22")
+        })
+        serverLog.ackFlux(["/ack2", "/ack22"], ()=>{
+            res.send("ack2!")
         })
         
     })
