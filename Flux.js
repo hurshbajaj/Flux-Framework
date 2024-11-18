@@ -1,11 +1,17 @@
-function checkDependencies(){
-    if (!require.cache[require.resolve('express')]) {
+function checkDependencies() {
+    try {
+        require.resolve('express'); 
+    } catch {
         console.warn('Flux fluctuated! "Express" required.');
     }
-    if (!require.cache[require.resolve('fs')]) {
+
+    try {
+        require.resolve('fs'); 
+    } catch {
         console.warn('Flux fluctuated! "File System" required.');
     }
 }
+
 
 class Flux {
     static expStatus = '+++ Flux Exported';
@@ -116,7 +122,7 @@ class ServerLog extends Flux{
     }
     //server *rel
 
-    ack(method=this.baseReq.method, urlArr, handler=()=>{}){
+    ack(method="get", urlArr, handler=()=>{}){
         
         if(!Array.isArray(urlArr)){
             urlArr = [urlArr]
@@ -143,7 +149,7 @@ class ServerLog extends Flux{
             throw new Error("Flux Fluctuated! " + err.message);
         } 
     }
-    ackAll(method, handler = () => {}) {
+    ackAll(method="get", handler = () => {}) {
         try {
             this.server_.use(async (req, res, next) => {
                 if (req.method.toUpperCase() === method.toUpperCase()) {
@@ -160,21 +166,11 @@ class ServerLog extends Flux{
             throw new Error("Flux Fluctuated! " + err.message);
         }
     }
-    
-    
-
-    routeFlux(url ,handler){
-        try{
-            if(this.baseReq.url == url){
-                handler()
-            }
-        }catch(err){
-            throw new Error("Flux Fluctuated! " + err.message);
-        }
-        
-    }
 
     ackFlux(urls ,handler){
+        if(!Array.isArray(urls)){
+            urls = [urls]
+        }
         try{
             if(urls.includes(this.baseReq.url)){
                 
@@ -223,7 +219,7 @@ class ServerLog extends Flux{
                     index: this.reqI,
                     host: req.hostname,
                     ip:req.ip,
-                    url:req,url,
+                    url:req.url,
                     timeStamp_ISO: new Date(),
                     timestamp :Date.now()
                 })
