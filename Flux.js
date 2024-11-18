@@ -116,8 +116,11 @@ class ServerLog extends Flux{
     }
     //server *rel
 
-    ack(method=this.baseReq.method, urlArr=[], handler=()=>{}){
-        this.preRedirect = null;
+    ack(method=this.baseReq.method, urlArr, handler=()=>{}){
+        
+        if(!Array.isArray(urlArr)){
+            urlArr = [urlArr]
+        }
         try{
             urlArr.forEach(url_ => {
                 this.server_[method](url_, async (req, res)=>{
@@ -220,6 +223,7 @@ class ServerLog extends Flux{
                     index: this.reqI,
                     host: req.hostname,
                     ip:req.ip,
+                    url:req,url,
                     timeStamp_ISO: new Date(),
                     timestamp :Date.now()
                 })
@@ -298,33 +302,4 @@ module.exports = {
 };
 
 
-//test section
 
-function Test(){
-    
-
-    checkDependencies()
-    const serverLog = new ServerLog(3000);
-
-    serverLog.initReqLog()
-        // Define a route using ack method
-    serverLog.ack("get",["/", "/home"],(req, res)=>{
-        res.send("ack")
-    })
-    serverLog.ackAll("get", (req, res)=>{
-        serverLog.routeFlux("/routeFlux", ()=>{
-            res.send("routeFlux!")
-        })
-        serverLog.routeFlux("/routeFlux2", ()=>{
-            res.send("routeFlux!22")
-        })
-        serverLog.ackFlux(["/ack2", "/ack22"], ()=>{
-            res.send("ack2!")
-        })
-        
-    })
-
-    serverLog.default((req, res)=>{ res.send("404");})
-}
-
-Test()
